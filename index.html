@@ -145,6 +145,9 @@
             const password = document.getElementById('password').value;
             const messageEl = document.getElementById('message');
 
+    console.log("選ばれた workerId:", workerId);
+    console.log("入力された password:", password);
+
             if (!workerId) {
                 setMessage("名前を選択してください。", "error");
                 return;
