@@ -116,12 +116,15 @@
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzgHJLy2b1RFzIS1UoOBERYZQD-EtMctAYUJDyw6HrYdCeDk0XUE1PlOAev-0Sb_aJecQ/exec";
 
         // ページ読み込み時従業員一覧を取得
-        window.onload = async function() {
+window.onload = async function() {
             const select = document.getElementById('workerSelect');
             try {
                 const response = await fetch(`${GAS_API_URL}?action=getWorkers`);
                 const result = await response.json();
                 
+                // ★ここを追加：GASからどんなデータが返ってきているかコンソールで確認する
+                console.log("GASからの取得結果:", result);
+
                 if (result.status === "success") {
                     select.innerHTML = '<option value="">選択してください</option>';
                     result.data.forEach(worker => {
@@ -138,7 +141,7 @@
                 select.innerHTML = '<option value="">通信エラーが発生しました</option>';
             }
         };
-
+        
         // 打刻リクエスト送信処理
         async function handleClock(type) {
             const workerId = document.getElementById('workerSelect').value;
