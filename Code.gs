@@ -67,18 +67,15 @@ function getWorkersList() {
   const sheet = ss.getSheetByName("従業員一覧");
   const rows = sheet.getDataRange().getValues();
   
-  // 1行目はヘッダー
   const headers = rows[0];
   const data = rows.slice(1);
   
-  // インデックスの定義（スプレッドシートの列順に合わせて調整してください）
-  // 状態(0), 従業員氏名(1), よみ(2), 性別(3), 大学(4), 学年(5), 最寄り駅(6), ＩＤ(7), ＰＡＳＳ(8), ...
-return data.filter(row => row[0] === "在職" || row[0] === "有効" || !row[0]).map(row => {
-  return {
-    name: row[1],
-    id: row[8], // I列（0から数えて8番目）
-  };
-});
+  return data.filter(row => row[0] === "在職" || row[0] === "有効" || !row[0]).map(row => {
+    return {
+      name: row[1],
+      id: row[1], // IDの代わりに「名前」をそのままidとして渡す
+    };
+  });
 }
 
 /**
