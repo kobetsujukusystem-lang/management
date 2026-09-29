@@ -73,13 +73,12 @@ function getWorkersList() {
   
   // インデックスの定義（スプレッドシートの列順に合わせて調整してください）
   // 状態(0), 従業員氏名(1), よみ(2), 性別(3), 大学(4), 学年(5), 最寄り駅(6), ＩＤ(7), ＰＡＳＳ(8), ...
-  return data.filter(row => row[0] === "在職" || row[0] === "有効" || !row[0]).map(row => {
-    return {
-      name: row[1],
-      id: row[7],
-      // セキュリティのためPASSは返さない
-    };
-  });
+return data.filter(row => row[0] === "在職" || row[0] === "有効" || !row[0]).map(row => {
+  return {
+    name: row[1],
+    id: row[8], // I列（0から数えて8番目）
+  };
+});
 }
 
 /**
@@ -92,8 +91,8 @@ function authenticateUser(inputId, inputPass) {
   
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-    const id = String(row[7]);    // ＩＤ列
-    const pass = String(row[8]);  // ＰＡＳＳ列
+const id = String(row[8]);    // ＩＤ列（I列）
+const pass = String(row[9]);  // ＰＡＳＳ列（J列）
     const name = row[1];          // 従業員氏名列
     
     if (id === String(inputId) && pass === String(inputPass)) {
@@ -174,11 +173,11 @@ function recordAttendance(id, type) {
 function getWorkerNameById(ss, id) {
   const sheet = ss.getSheetByName("従業員一覧");
   const rows = sheet.getDataRange().getValues();
-  for (let i = 1; i < rows.length; i++) {
-    if (String(rows[i][7]) === String(id)) {
-      return rows[i][1]; // 従業員氏名
-    }
+for (let i = 1; i < rows.length; i++) {
+  if (String(rows[i][8]) === String(id)) { // I列（8）に合わせる
+    return rows[i][1]; // 従業員氏名
   }
+}
   return null;
 }
 
