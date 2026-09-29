@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打刻システム - 個別指導アプロット</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 24px;
+            color: #333;
+            font-size: 22px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+        select, input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background-color: #fff;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .btn-in { background-color: #4CAF50; }
+        .btn-out { background-color: #f44336; }
+        .btn-break-start { background-color: #ff9800; }
+        .btn-break-end { background-color: #2196F3; }
+        
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            min-height: 20px;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>勤怠打刻システム</h2>
+        
+        <div class="form-group">
+            <label for="workerSelect">名前</label>
+            <select id="workerSelect">
+                <option value="">読み込み中...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="password">パスワード</label>
+            <input type="password" id="password" placeholder="パスワードを入力">
+        </div>
+
+        <div class="button-grid">
+            <button class="btn-in" onclick="handleClock('出勤')">出勤</button>
+            <button class="btn-out" onclick="handleClock('退勤')">退勤</button>
+            <button class="btn-break-start" onclick="handleClock('休憩開始')">休憩開始</button>
+            <button class="btn-break-end" onclick="handleClock('休憩終了')">休憩終了</button>
+        </div>
+
+        <p id="message"></p>
+    </div>
+
+    <script>
+        // デプロイしたGoogle Apps ScriptのウェブアプリURLを指定してください
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxHkOiNM6GZ_vnzI84sN9KUGzNOL3r4j3iCs1zyMeUC_QLEortfsm8VfyMYwTcouUTGIg/exec";
+
+        // ページ読み込み時従業員一覧を取得
+        window.onload = async function() {
+            const select = document.getElementById('workerSelect');
+            try {
+                const response = await fetch(`${GAS_API_URL}?action=getWorkers`);
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    select.innerHTML = '<option value="">選択してください</option>';
+                    result.data.forEach(worker => {
+                        const option = document.createElement('option');
+                        option.value = worker.id;
+                        option.textContent = worker.name;
+                        select.appendChild(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">従業員リストの取得に失敗しました</option>';
+                }
+            } catch (error) {
+                console.error(error);
+                select.innerHTML = '<option value="">通信エラーが発生しました</option>';
+            }
+        };
+
+        // 打刻リクエスト送信処理
+        async function handleClock(type) {
+            const workerId = document.getElementById('workerSelect').value;
+            const password = document.getElementById('password').value;
+            const messageEl = document.getElementById('message');
+
+            if (!workerId) {
+                setMessage("名前を選択してください。", "error");
+                return;
+            }
+            if (!password) {
+                setMessage("パスワードを入力してください。", "error");
+                return;
+            }
+
+            setMessage("送信中...", "success");
+
+            try {
+                // 1. まずログイン認証を兼ねてパスワード確認を行うか、バックエンド側でチェック
+                // 今回はシンプルに打刻アクション内でIDとパスワードを照合する形に拡張も可能ですが、
+                // 今回のCode.gsに合わせて、サーバー側で認証または打刻処理を行います。
+                
+                // ※もし厳密にパスワードチェックを入れたい場合は、doPost内でIDとパスワードを突合してください。
+                const response = await fetch(GAS_API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "clockIn",
+                        id: workerId,
+                        password: password, // パスワードも送信
+                        type: type
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    setMessage(result.message, "success");
+                    document.getElementById('password').value = ""; // パスワード欄をクリア
+                } else {
+                    setMessage(result.message, "error");
+                }
+            } catch (error) {
+                console.error(error);
+                setMessage("通信エラーが発生しました。", "error");
+            }
+        }
+
+        function setMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = type;
+        }
+    </script>
+</body>
+</html>
