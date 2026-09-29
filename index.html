@@ -127,12 +127,12 @@ window.onload = async function() {
 
                 if (result.status === "success") {
                     select.innerHTML = '<option value="">選択してください</option>';
-                    result.data.forEach(worker => {
-                        const option = document.createElement('option');
-                        option.value = worker.id;
-                        option.textContent = worker.name;
-                        select.appendChild(option);
-                    });
+result.data.forEach(worker => {
+    const option = document.createElement('option');
+    option.value = worker.name; // IDの代わりに名前を値にする
+    option.textContent = worker.name;
+    select.appendChild(option);
+});
                 } else {
                     select.innerHTML = '<option value="">従業員リストの取得に失敗しました</option>';
                 }
@@ -141,7 +141,7 @@ window.onload = async function() {
                 select.innerHTML = '<option value="">通信エラーが発生しました</option>';
             }
         };
-        
+
         // 打刻リクエスト送信処理
         async function handleClock(type) {
             const workerId = document.getElementById('workerSelect').value;
